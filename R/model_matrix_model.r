@@ -10,7 +10,7 @@ anysubset = function(mt, mt2col, fill = 0) {
 Anysubset = function(mt, mt2col, fill = 0) {
   diffcol = setdiff(mt2col, dimnames(mt)[[2]])
   diffmt = Matrix::Matrix(fill, nrow(mt), length(diffcol), dimnames = list(NULL, diffcol))
-  mt2 = Matrix::cBind(mt, diffmt)[, mt2col]
+  mt2 = cbind(mt, diffmt)[, mt2col]
   return(mt2)
 }
 poly.coef = function(form, data) {
@@ -79,7 +79,7 @@ model.matrix.model = function(form, data, sparse = T, center = FALSE, scale = FA
         x = xn
       }
       else {
-        x = Matrix::cBind(x, xn)
+        x = cbind(x, xn)
       }
     }
     else {
@@ -141,7 +141,7 @@ predict.model.matrix.model = function(obj, data, handleInvalid = "keep") {
         x = xn
       }
       else {
-        x = Matrix::cBind(x, xn)
+        x = cbind(x, xn)
       }
     }
     else {
