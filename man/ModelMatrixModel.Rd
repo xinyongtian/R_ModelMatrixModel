@@ -2,7 +2,7 @@
 % Please edit documentation in R/model_matrix_model.r
 \name{ModelMatrixModel}
 \alias{ModelMatrixModel}
-\title{Create model.matrix and save the fitted parameters}
+\title{ModelMatrixModel() function}
 \usage{
 ModelMatrixModel(
   rformula,
@@ -11,7 +11,8 @@ ModelMatrixModel(
   center = FALSE,
   scale = FALSE,
   remove_1st_dummy = F,
-  remove_same_value_column = F
+  remove_same_value_column = F,
+  verbose = T
 )
 }
 \arguments{
@@ -28,6 +29,8 @@ ModelMatrixModel(
 \item{remove_1st_dummy}{bool, if remove the first dummy variable in one hot key transformation}
 
 \item{remove_same_value_column}{bool, if remove column with one unique value}
+
+\item{verbose}{bool, if print out progress}
 }
 \value{
 A ModelMatrixModel class,which includes the transformed matrix and  the fitted parameters.

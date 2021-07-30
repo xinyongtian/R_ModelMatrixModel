@@ -1,0 +1,37 @@
+---
+title: "demo_ModelMatrixModel"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{demo_ModelMatrixModel}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## setup
+```{r}
+rm(list=ls())
+library(ModelMatrixModel)
+traindf= data.frame(x1 = sample(LETTERS[1:5], replace = T, 20),
+                 x2 = rnorm(20, 100, 5),
+                 x3 = factor(sample(c("U","L","P"), replace = T, 20)),
+                 y = rnorm(20, 10, 2))
+newdf=data.frame(x1 = sample(LETTERS[1:5], replace = T, 5),
+                 x2 = rnorm(5, 100, 5),
+                 x3 = sample(c("U","L","P"), replace = T, 5)) 
+
+head(traindf)
+sapply(traindf,class) #input categorical variable can be either character or factor
+```
+## dummy variable
+```{r}
+
+```
+
+

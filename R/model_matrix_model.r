@@ -13,24 +13,24 @@ Anysubset = function(mt, mt2col, fill = 0) {
   mt2 = cbind(mt, diffmt)[, mt2col]
   return(mt2)
 }
-poly.coef = function(rformula, data) {
-  f = as.character(rformula)[2]
-  fp = regmatches(f, gregexpr("poly\\([^)]+\\)", f))
+extract_poly_coef = function(rformula, data) {
+  rformula_str = as.character(rformula)[2]
+  fp = regmatches(rformula_str, gregexpr("poly\\([^)]+\\)", rformula_str))
   fpu = unique(fp[[1]])
   fpo = sub("poly\\((.*?),.*", "\\1", fpu)
   getpolycoef2 = function(var, df = data) {
     txt = paste("with (df, ", var, ")", sep = "")
-    a = epp(txt)
+    a = eval_parent(txt)
     ac = attr(a, "coefs")
     return(ac)
   }
-  poly.coef = lapply(fpu, getpolycoef2)
-  names(poly.coef) = fpo
-  return(poly.coef)
+  extract_poly_coef = lapply(fpu, getpolycoef2)
+  names(extract_poly_coef) = fpo
+  return(extract_poly_coef)
 }
-epp = function(x) eval.parent(parse(text = x))
+eval_parent = function(x) eval.parent(parse(text = x))
 
-#' Create model.matrix and save the fitted parameters
+#' ModelMatrixModel() function
 #'
 #' This function create model.matrix and save the fitted parameters
 #'
@@ -41,67 +41,68 @@ epp = function(x) eval.parent(parse(text = x))
 #' @param scale  bool, if scale the output
 #' @param remove_1st_dummy bool, if remove the first dummy variable in one hot key transformation
 #' @param remove_same_value_column bool, if remove column with one unique value
+#' @param verbose bool, if print out progress
 #' @return A ModelMatrixModel class,which includes the transformed matrix and  the fitted parameters.
 #' @export
 ModelMatrixModel = function(rformula, data, sparse = T, center = FALSE, scale = FALSE,
                               remove_1st_dummy = F, remove_same_value_column = F,verbose=T) {
-  f = as.character(rformula)[2]
-  f2 = trim(unlist(strsplit(f, "\\+")))
-  f2 = f2[f2 != ""]
-  fdf = data.frame(nm = f2, bt = (1:length(f2)))
-  nbt = length(f2)
+  rformula_str = as.character(rformula)[2]
+  rformula_items = trim(unlist(strsplit(rformula_str, "\\+")))
+  rformula_items = rformula_items[rformula_items != ""]
+  rformula_df = data.frame(item_name = rformula_items, item_number = (1:length(rformula_items)))
+  rformula_items_length = length(rformula_items)
   center.attr = NULL
   scale.attr = NULL
   factor.levelses = NULL
-  for (nm in names(data)) {
-    if (grepl(nm, f)) {
-      if (class(data[[nm]]) == "character")
-        data[[nm]] = as.factor(data[[nm]])
-      if (class(data[[nm]]) == "factor") {
-        le = list(levels(data[[nm]]))
-        names(le) = nm
+  for (item_name in names(data)) {
+    if (grepl(item_name, rformula_str)) {
+      if (class(data[[item_name]]) == "character")
+        data[[item_name]] = as.factor(data[[item_name]])
+      if (class(data[[item_name]]) == "factor") {
+        le = list(levels(data[[item_name]]))
+        names(le) = item_name
         factor.levelses = c(factor.levelses, le)
       }
     }
   }
-  for (n in 1:nbt) {
-    if (verbose)print(paste(n, ' out of ',nbt))
-    fnc = paste(fdf[fdf$bt == n, "nm"], collapse = "+")
+  for (n in 1:rformula_items_length) {
+    if (verbose)print(paste(n, ' out of ',rformula_items_length))
+    nth_item_formula_str =rformula_df[rformula_df$item_number == n, "item_name"]
     if (remove_1st_dummy) {
-      fn = formula(paste("~", fnc))
-      xn = model.matrix(fn, data = data)
-      xn = xn[, -1, drop = F]
+      nth_item_formula = formula(paste("~", nth_item_formula_str))
+      nth_item_modelmatrix = model.matrix(nth_item_formula, data = data)
+      nth_item_modelmatrix = nth_item_modelmatrix[, -1, drop = F]
     }
     else {
-      fn = formula(paste("~0+", fnc))
-      xn = model.matrix(fn, data = data)
+      nth_item_formula = formula(paste("~0+", nth_item_formula_str))
+      nth_item_modelmatrix = model.matrix(nth_item_formula, data = data)
     }
     if (remove_same_value_column)
-      xn = rm.1level.col(xn)
-    xn = scale(xn, center = center, scale = scale)
+      nth_item_modelmatrix = rm.1level.col(nth_item_modelmatrix)
+    nth_item_modelmatrix = scale(nth_item_modelmatrix, center = center, scale = scale)
     if (center == T) {
-      xns = attr(xn, "scaled:center")
+      xns = attr(nth_item_modelmatrix, "scaled:center")
       center.attr = c(center.attr, xns)
     }
     if (scale == T) {
-      xns = attr(xn, "scaled:scale")
+      xns = attr(nth_item_modelmatrix, "scaled:scale")
       scale.attr = c(scale.attr, xns)
     }
     if (sparse == T) {
-      xn = Matrix::Matrix(xn, sparse = sparse)
+      nth_item_modelmatrix = Matrix::Matrix(nth_item_modelmatrix, sparse = sparse)
       if (n == 1) {
-        x = xn
+        x = nth_item_modelmatrix
       }
       else {
-        x = cbind(x, xn)
+        x = cbind(x, nth_item_modelmatrix)
       }
     }
     else {
       if (n == 1) {
-        x = xn
+        x = nth_item_modelmatrix
       }
       else {
-        x = cbind(x, xn)
+        x = cbind(x, nth_item_modelmatrix)
       }
     }
   }
@@ -110,8 +111,8 @@ ModelMatrixModel = function(rformula, data, sparse = T, center = FALSE, scale = 
     names(center.attr) = gsub("[^[:alnum:]]", "_", names(center.attr))
   if (scale == T)
     names(scale.attr) = gsub("[^[:alnum:]]", "_", names(scale.attr))
-  poly.coef = poly.coef(rformula, data = data)
-  mx = list(rformula = rformula, x = x, poly.coef = poly.coef, scale.attr = scale.attr,
+  extract_poly_coef = extract_poly_coef(rformula, data = data)
+  mx = list(rformula = rformula, x = x, extract_poly_coef = extract_poly_coef, scale.attr = scale.attr,
             center.attr = center.attr, x.colnames = colnames(x), sparse = sparse, factor.levelses = factor.levelses,
             remove_1st_dummy = remove_1st_dummy)
   class(mx) = "ModelMatrixModel"
@@ -120,7 +121,7 @@ ModelMatrixModel = function(rformula, data, sparse = T, center = FALSE, scale = 
 
 
 
-#' Create model.matrix and save the fitted parameters
+#' predict() function
 #'
 #' This function transform new data based on information from a ModelMatrixModel object
 #'
@@ -128,55 +129,56 @@ ModelMatrixModel = function(rformula, data, sparse = T, center = FALSE, scale = 
 #' @param data a data.frame
 #' @param handleInvalid a string,'keep' or 'error'.  In dummy variable transformation, if categorical variable has a factor level that is unseen before, 'keep' will keep the record, output dummy variables will be all zero.
 #' @param ... other parameters
+#' @param verbose bool, if print out progress
 #' @return A ModelMatrixModel class,which includes the transformed matrix and  the fitted parameters copied from input object.
 #' @export
-predict.ModelMatrixModel = function(object, data, handleInvalid = "keep",...) {
-  f = tail(as.character(object$rformula), 1)
-  f2 = trim(unlist(strsplit(f, "\\+")))
-  f2 = f2[f2 != ""]
-  fdf = data.frame(nm = f2, bt = (1:length(f2)))
-  fdf$nm2 = gsub("(poly\\((.*?),.*)\\)", "\\1,coefs=object$poly.coef$\\2)", fdf$nm)
-  nbt = length(f2)
-  for (nn in names(data)) {
-    if (grepl(paste0("\\b", nn, "\\b"), f)) {
-      if (class(data[[nn]]) == "character")
-        data[[nn]] = as.factor(data[[nn]])
-      if (class(data[[nn]]) == "factor") {
-        if (length(setdiff(levels(data[[nn]]), object$factor.levelses[[nn]])) !=
+predict.ModelMatrixModel = function(object, data, handleInvalid = "keep",verbose=T, ...) {
+  rformula_str = tail(as.character(object$rformula), 1)
+  rformula_items = trim(unlist(strsplit(rformula_str, "\\+")))
+  rformula_items = rformula_items[rformula_items != ""]
+  rformula_df = data.frame(item_name = rformula_items, item_number = (1:length(rformula_items)))
+  rformula_df$item_name_modified = gsub("(poly\\((.*?),.*)\\)", "\\1,coefs=object$extract_poly_coef$\\2)", rformula_df$item_name)
+  rformula_items_length = length(rformula_items)
+  for (col in names(data)) {
+    if (grepl(paste0("\\b", col, "\\b"), rformula_str)) {
+      if (class(data[[col]]) == "character")
+        data[[col]] = as.factor(data[[col]])
+      if (class(data[[col]]) == "factor") {
+        if (length(setdiff(levels(data[[col]]), object$factor.levelses[[col]])) !=
             0 & handleInvalid != "keep") {
-          stop("invalid level(s): \"", setdiff(levels(data[[nn]]), object$factor.levelses[[nn]]),
-               "\", in column   \"", nn, "\" in test data  but not training data\n to avoid this error set handleInvalid=\"keep\"")
+          stop("invalid level(s): \"", setdiff(levels(data[[col]]), object$factor.levelses[[col]]),
+               "\", in column   \"", col, "\" in test data  but not training data\n to avoid this error set handleInvalid=\"keep\"")
         }
-        else if (length(levels(data[[nn]])) == 1 | (object$remove_1st_dummy &
-                                                    !isTRUE(all.equal(object$factor.levelses[[nn]], levels(data[[nn]]))))) {
-          data[[nn]] = factor(data[[nn]], levels = union(object$factor.levelses[[nn]],
-                                                         levels(data[[nn]])))
+        else if (length(levels(data[[col]])) == 1 | (object$remove_1st_dummy &
+                                                    !isTRUE(all.equal(object$factor.levelses[[col]], levels(data[[col]]))))) {
+          data[[col]] = factor(data[[col]], levels = union(object$factor.levelses[[col]],
+                                                         levels(data[[col]])))
         }
       }
     }
   }
-  for (n in 1:nbt) {
-    if (verbose)print(paste(n, ' out of ',nbt))
-    fnc = paste(fdf[fdf$bt == n, "nm2"], collapse = "+")
-    fn = formula(paste("~0+", fnc))
-    xn = model.matrix(fn, data = data)
-    colnames(xn) = gsub("(poly\\(.*),.+\\)", "\\1)", colnames(xn))
-    colnames(xn) = gsub("[^[:alnum:]]", "_", sub(":", "_X_", colnames(xn)))
+  for (n in 1:rformula_items_length) {
+    if (verbose)print(paste(n, ' out of ',rformula_items_length))
+    nth_item_formula_str = rformula_df[rformula_df$item_number == n, "item_name_modified"]
+    nth_item_formula = formula(paste("~0+", nth_item_formula_str))
+    nth_item_modelmatrix = model.matrix(nth_item_formula, data = data)
+    colnames(nth_item_modelmatrix) = gsub("(poly\\(.*),.+\\)", "\\1)", colnames(nth_item_modelmatrix))
+    colnames(nth_item_modelmatrix) = gsub("[^[:alnum:]]", "_", sub(":", "_X_", colnames(nth_item_modelmatrix)))
     if (object$sparse == T) {
-      xn = Matrix::Matrix(xn, sparse = object$sparse)
+      nth_item_modelmatrix = Matrix::Matrix(nth_item_modelmatrix, sparse = object$sparse)
       if (n == 1) {
-        x = xn
+        x = nth_item_modelmatrix
       }
       else {
-        x = cbind(x, xn)
+        x = cbind(x, nth_item_modelmatrix)
       }
     }
     else {
       if (n == 1) {
-        x = xn
+        x = nth_item_modelmatrix
       }
       else {
-        x = cbind(x, xn)
+        x = cbind(x, nth_item_modelmatrix)
       }
     }
   }

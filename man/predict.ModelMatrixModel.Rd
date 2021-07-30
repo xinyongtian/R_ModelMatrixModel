@@ -2,9 +2,9 @@
 % Please edit documentation in R/model_matrix_model.r
 \name{predict.ModelMatrixModel}
 \alias{predict.ModelMatrixModel}
-\title{Create model.matrix and save the fitted parameters}
+\title{predict() function}
 \usage{
-\method{predict}{ModelMatrixModel}(object, data, handleInvalid = "keep", ...)
+\method{predict}{ModelMatrixModel}(object, data, handleInvalid = "keep", verbose = T, ...)
 }
 \arguments{
 \item{object}{a ModelMatrixModel object}
@@ -12,6 +12,8 @@
 \item{data}{a data.frame}
 
 \item{handleInvalid}{a string,'keep' or 'error'.  In dummy variable transformation, if categorical variable has a factor level that is unseen before, 'keep' will keep the record, output dummy variables will be all zero.}
+
+\item{verbose}{bool, if print out progress}
 
 \item{...}{other parameters}
 }
