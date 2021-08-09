@@ -40,15 +40,14 @@ eval_parent = function(x) eval.parent(parse(text = x))
 #' @param center bool, if center the output
 #' @param scale  bool, if scale the output
 #' @param remove_1st_dummy bool, if remove the first dummy variable in one hot key transformation
-#' @param remove_same_value_column bool, if remove column with one unique value
 #' @param verbose bool, if print out progress
 #' @return A ModelMatrixModel class,which includes the transformed matrix and  the fitted parameters.
 #' @export
 ModelMatrixModel = function(rformula, data, sparse = T, center = FALSE, scale = FALSE,
-                              remove_1st_dummy = F, remove_same_value_column = F,verbose=T) {
+                              remove_1st_dummy = F,verbose=F) {
   rformula_str = as.character(rformula)[2]
-  rformula_items = trim(unlist(strsplit(rformula_str, "\\+")))
-  rformula_items = rformula_items[rformula_items != ""]
+  rformula_items = trim(unlist(strsplit(rformula_str, "[+-]")))
+  rformula_items =rformula_items[!rformula_items%in%c("0","")]
   rformula_df = data.frame(item_name = rformula_items, item_number = (1:length(rformula_items)))
   rformula_items_length = length(rformula_items)
   center.attr = NULL
@@ -71,15 +70,12 @@ ModelMatrixModel = function(rformula, data, sparse = T, center = FALSE, scale = 
     if (remove_1st_dummy) {
       nth_item_formula = formula(paste("~", nth_item_formula_str))
       nth_item_modelmatrix = model.matrix(nth_item_formula, data = data)
-      nth_item_modelmatrix = nth_item_modelmatrix[, -1, drop = F]
+      if (nth_item_formula_str!="1") nth_item_modelmatrix = nth_item_modelmatrix[, -1, drop = F]
     }
     else {
       nth_item_formula = formula(paste("~0+", nth_item_formula_str))
       nth_item_modelmatrix = model.matrix(nth_item_formula, data = data)
     }
-    if (remove_same_value_column)
-      nth_item_modelmatrix = rm.1level.col(nth_item_modelmatrix)
-    nth_item_modelmatrix = scale(nth_item_modelmatrix, center = center, scale = scale)
     if (center == T) {
       xns = attr(nth_item_modelmatrix, "scaled:center")
       center.attr = c(center.attr, xns)
@@ -132,10 +128,10 @@ ModelMatrixModel = function(rformula, data, sparse = T, center = FALSE, scale = 
 #' @param verbose bool, if print out progress
 #' @return A ModelMatrixModel class,which includes the transformed matrix and  the fitted parameters copied from input object.
 #' @export
-predict.ModelMatrixModel = function(object, data, handleInvalid = "keep",verbose=T, ...) {
+predict.ModelMatrixModel = function(object, data, handleInvalid = "keep",verbose=F, ...) {
   rformula_str = tail(as.character(object$rformula), 1)
-  rformula_items = trim(unlist(strsplit(rformula_str, "\\+")))
-  rformula_items = rformula_items[rformula_items != ""]
+  rformula_items = trim(unlist(strsplit(rformula_str, "[+-]")))
+  rformula_items =rformula_items[!rformula_items%in%c("0","")]
   rformula_df = data.frame(item_name = rformula_items, item_number = (1:length(rformula_items)))
   rformula_df$item_name_modified = gsub("(poly\\((.*?),.*)\\)", "\\1,coefs=object$extract_poly_coef$\\2)", rformula_df$item_name)
   rformula_items_length = length(rformula_items)
@@ -147,7 +143,7 @@ predict.ModelMatrixModel = function(object, data, handleInvalid = "keep",verbose
         if (length(setdiff(levels(data[[col]]), object$factor.levelses[[col]])) !=
             0 & handleInvalid != "keep") {
           stop("invalid level(s): \"", setdiff(levels(data[[col]]), object$factor.levelses[[col]]),
-               "\", in column   \"", col, "\" in test data  but not training data\n to avoid this error set handleInvalid=\"keep\"")
+               "\", in column \"", col, "\" in test data  but not training data\n to avoid this error set handleInvalid=\"keep\"")
         }
         else if (length(levels(data[[col]])) == 1 | (object$remove_1st_dummy &
                                                     !isTRUE(all.equal(object$factor.levelses[[col]], levels(data[[col]]))))) {

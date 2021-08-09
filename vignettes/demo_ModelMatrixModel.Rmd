@@ -1,5 +1,5 @@
 ---
-title: "demo_ModelMatrixModel"
+title: "ModelMatrixModel"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{demo_ModelMatrixModel}
@@ -7,12 +7,19 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{css, echo=FALSE}
+pre code {
+  white-space: pre-wrap;
+}
+```
+
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
 ```
+model.matrix function is a convenient way to transform training data set for modeling. But it does not save any parameter used in transformation, so it is hard to apply the same transformation to test data and new data. ModelMatrixModel function is created for this purpose.
 
 ## setup
 ```{r}
@@ -22,16 +29,96 @@ traindf= data.frame(x1 = sample(LETTERS[1:5], replace = T, 20),
                  x2 = rnorm(20, 100, 5),
                  x3 = factor(sample(c("U","L","P"), replace = T, 20)),
                  y = rnorm(20, 10, 2))
-newdf=data.frame(x1 = sample(LETTERS[1:5], replace = T, 5),
-                 x2 = rnorm(5, 100, 5),
-                 x3 = sample(c("U","L","P"), replace = T, 5)) 
+newdf=data.frame(x1 = sample(LETTERS[1:5], replace = T, 3),
+                 x2 = rnorm(3, 100, 5),
+                 x3 = sample(c("U","L","P"), replace = T, 3)) 
 
 head(traindf)
 sapply(traindf,class) #input categorical variable can be either character or factor
-```
-## dummy variable
-```{r}
 
+
+
+
+```
+## problem with model.matrix() function
+```{r}
+f1=formula("~x1+x2")
+head(model.matrix(f1, traindf),2)
+head(model.matrix(f1, newdf),2)
+```
+Note the number of columns is different in the two ouputs, which will problematic in applying the built model to new data . To avoid that, we need pre-transform column x1 in both dataset  to factor with exact same levels. That will be cumbersome if there are many categorical columns. 
+
+## ModelMatixModel comes to rescue
+### fit data to create ModelMatixModel object
+```{r}
+f2=formula("~ 1+x1+x2") # if need output intercept, need add "1" explicitly
+mm=ModelMatrixModel( f2,traindf,remove_1st_dummy =T,sparse = F)
+```
+default is to remove first dummy variable, and output sparse matrix.
+```{r}
+class(mm)
+head(mm$x,2) #note "_Intercept_" is intercept column
+```
+### transform new data
+```{r}
+mm_pred=predict(mm,newdf)
+head(mm_pred$x,2)
+```
+
+## dummy varible
+### keep or remove  first dummy variable
+```{r}
+mm=ModelMatrixModel(formula("~x1+x2+x3"),traindf,remove_1st_dummy = T) 
+```
+default is to keep first dummy variable
+```{r}
+data.frame(as.matrix(head(mm$x,2)))
+mm_pred=predict(mm,newdf)
+data.frame(as.matrix(head(mm_pred$x,2)))
+```
+### dummy variable with interaction
+#### keep 1st dummy variable
+```{r}
+mm=ModelMatrixModel(formula("~x2+x3+x2:x3"),traindf) 
+data.frame(as.matrix(head(mm$x,2))) # ':' in column name  is replaced with '_X_'
+mm_pred=predict(mm,newdf)
+data.frame(as.matrix(head(mm_pred$x,2)))
+```
+#### remove 1st dummy variable
+```{r}
+mm=ModelMatrixModel(formula("~x2*x3"),traindf,remove_1st_dummy = T) 
+data.frame(as.matrix(head(mm$x,2)))
+mm_pred=predict(mm,newdf)
+data.frame(as.matrix(head(mm_pred$x,2)))
+```
+### invalid level in new data
+It is a common categorical column in  new data contains in valid level, it can be handled as following
+```{r}
+mm=ModelMatrixModel(formula("~x2+x3"),traindf) 
+data.frame(as.matrix(head(mm$x,2)))
+newdf2=newdf
+newdf2[1,'x3']='z'  #create invalid level
+mm_pred=predict(mm,newdf2,handleInvalid = "keep") 
+```
+default is to keep the invalid row ,i.e. set all dummy variables as 0. if handleInvalid = "error", throw error.
+```{r}
+data.frame(as.matrix(head(mm_pred$x,2))) 
+```
+
+## save poly() orthogonal polynomials parameteres
+
+```{r}
+mm=ModelMatrixModel(formula("~poly(x2,3)+x3"),traindf) 
+data.frame(as.matrix(head(mm$x,2)))
+mm_pred=predict(mm,newdf)
+data.frame(as.matrix(head(mm_pred$x,2)))
+```
+also accept raw polynomial transformation
+```{r}
+mm=ModelMatrixModel(formula("~poly(x2,3,raw=T)+x3"),traindf) 
+data.frame(as.matrix(head(mm$x,2)))
+mm_pred=predict(mm,newdf)
+data.frame(as.matrix(head(mm_pred$x,2)))
 ```
 
 
