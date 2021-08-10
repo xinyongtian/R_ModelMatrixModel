@@ -23,6 +23,7 @@ model.matrix function in R is a convenient way to transform training dataset for
 
 ## setup
 ```{r}
+#devtools::install_github("xinyongtian/R_ModelMatrixModel") #install from github
 rm(list=ls())
 library(ModelMatrixModel)
 set.seed(10)

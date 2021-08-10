@@ -12,8 +12,7 @@ Matrix
 
 ### Installing
 
-* How/where to download your program
-* Any modifications needed to be made to files/folders
+devtools::install_github("xinyongtian/R_ModelMatrixModel")
 
 ### example 
 
