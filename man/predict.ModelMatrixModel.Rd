@@ -4,7 +4,7 @@
 \alias{predict.ModelMatrixModel}
 \title{predict() function}
 \usage{
-\method{predict}{ModelMatrixModel}(object, data, handleInvalid = "keep", verbose = T, ...)
+\method{predict}{ModelMatrixModel}(object, data, handleInvalid = "keep", verbose = F, ...)
 }
 \arguments{
 \item{object}{a ModelMatrixModel object}
@@ -18,8 +18,11 @@
 \item{...}{other parameters}
 }
 \value{
-A ModelMatrixModel class,which includes the transformed matrix and  the fitted parameters copied from input object.
+A ModelMatrixModel class,which includes the transformed matrix and  the necessary transforming parameters copied from input object.
 }
 \description{
-This function transform new data based on information from a ModelMatrixModel object
+This function transform new data based on transforming parameters from a ModelMatrixModel object
+}
+\examples{
+see vignettes
 }

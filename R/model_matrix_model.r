@@ -32,18 +32,20 @@ eval_parent = function(x) eval.parent(parse(text = x))
 
 #' ModelMatrixModel() function
 #'
-#' This function create model.matrix and save the fitted parameters
+#' This function  transforms a data.frame to matrix  based on a r formula. It is similar to model.matrix() function. But it output a class stored with the transformed matrix and the transforming parameters.
 #'
-#' @param rformula a formula, e.g. output of formula()
+#' @param rformula a formula, e.g. rformula=formula("~ 1+x1+x2").Note the interpreting of the formula might be different slightly from model.matrix function. In model.matrix(),intercept column will be included in output matrix with or without "1" in the formula. But in ModelMatrixModel(),intercept column will  be included in output matrix only when  "1" is present. Moreover "0" in the formula will be ignored.
 #' @param data a data.frame
-#' @param sparse bool, if True return a sparse matrix.
+#' @param sparse bool, if True return a sparse matrix, i.e. a
 #' @param center bool, if center the output
 #' @param scale  bool, if scale the output
 #' @param remove_1st_dummy bool, if remove the first dummy variable in one hot key transformation
 #' @param verbose bool, if print out progress
-#' @return A ModelMatrixModel class,which includes the transformed matrix and  the fitted parameters.
+#' @return A ModelMatrixModel class,which includes the transformed matrix and  the transforming parameters.
 #' @export
-ModelMatrixModel = function(rformula, data, sparse = T, center = FALSE, scale = FALSE,
+#' @example
+#' see vignettes
+ModelMatrixModel = function(rformula, data, sparse = T, center = F, scale = F,
                               remove_1st_dummy = F,verbose=F) {
   rformula_str = as.character(rformula)[2]
   rformula_items = trim(unlist(strsplit(rformula_str, "[+-]")))
@@ -76,6 +78,7 @@ ModelMatrixModel = function(rformula, data, sparse = T, center = FALSE, scale = 
       nth_item_formula = formula(paste("~0+", nth_item_formula_str))
       nth_item_modelmatrix = model.matrix(nth_item_formula, data = data)
     }
+    nth_item_modelmatrix=scale(nth_item_modelmatrix, center = center, scale = scale)
     if (center == T) {
       xns = attr(nth_item_modelmatrix, "scaled:center")
       center.attr = c(center.attr, xns)
@@ -119,15 +122,17 @@ ModelMatrixModel = function(rformula, data, sparse = T, center = FALSE, scale = 
 
 #' predict() function
 #'
-#' This function transform new data based on information from a ModelMatrixModel object
+#' This function transform new data based on transforming parameters from a ModelMatrixModel object
 #'
 #' @param object a ModelMatrixModel object
 #' @param data a data.frame
 #' @param handleInvalid a string,'keep' or 'error'.  In dummy variable transformation, if categorical variable has a factor level that is unseen before, 'keep' will keep the record, output dummy variables will be all zero.
 #' @param ... other parameters
 #' @param verbose bool, if print out progress
-#' @return A ModelMatrixModel class,which includes the transformed matrix and  the fitted parameters copied from input object.
+#' @return A ModelMatrixModel class,which includes the transformed matrix and  the necessary transforming parameters copied from input object.
 #' @export
+#' @examples
+#' see vignettes
 predict.ModelMatrixModel = function(object, data, handleInvalid = "keep",verbose=F, ...) {
   rformula_str = tail(as.character(object$rformula), 1)
   rformula_items = trim(unlist(strsplit(rformula_str, "[+-]")))

@@ -19,16 +19,18 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
-model.matrix function is a convenient way to transform training data set for modeling. But it does not save any parameter used in transformation, so it is hard to apply the same transformation to test data and new data. ModelMatrixModel function is created for this purpose.
+model.matrix function in R is a convenient way to transform training dataset for modeling. But it does not save any parameter used in transformation, so it is hard to apply the same transformation to test dataset or new dataset. ModelMatrixModel package is created to solve the problem.
 
 ## setup
 ```{r}
 rm(list=ls())
 library(ModelMatrixModel)
+set.seed(10)
 traindf= data.frame(x1 = sample(LETTERS[1:5], replace = T, 20),
                  x2 = rnorm(20, 100, 5),
                  x3 = factor(sample(c("U","L","P"), replace = T, 20)),
                  y = rnorm(20, 10, 2))
+set.seed(20)
 newdf=data.frame(x1 = sample(LETTERS[1:5], replace = T, 3),
                  x2 = rnorm(3, 100, 5),
                  x3 = sample(c("U","L","P"), replace = T, 3)) 
@@ -46,15 +48,15 @@ f1=formula("~x1+x2")
 head(model.matrix(f1, traindf),2)
 head(model.matrix(f1, newdf),2)
 ```
-Note the number of columns is different in the two ouputs, which will problematic in applying the built model to new data . To avoid that, we need pre-transform column x1 in both dataset  to factor with exact same levels. That will be cumbersome if there are many categorical columns. 
+Note the number of columns is different in the two ouputs, which will be problematic when  applying the built model to new data . To avoid that,  column x1  in both dataset needs to be transformed  to factor with exact same levels. That will be cumbersome if there are many categorical columns. In addition, other transforming parameters, in transformation like  orthogonal polynomials, also need to be saved.
 
 ## ModelMatixModel comes to rescue
 ### fit data to create ModelMatixModel object
 ```{r}
-f2=formula("~ 1+x1+x2") # if need output intercept, need add "1" explicitly
+f2=formula("~ 1+x1+x2") # "1" is need in order to output intercept column
 mm=ModelMatrixModel( f2,traindf,remove_1st_dummy =T,sparse = F)
 ```
-default is to remove first dummy variable, and output sparse matrix.
+
 ```{r}
 class(mm)
 head(mm$x,2) #note "_Intercept_" is intercept column
@@ -66,9 +68,9 @@ head(mm_pred$x,2)
 ```
 
 ## dummy varible
-### keep or remove  first dummy variable
+### keep   first dummy variable
 ```{r}
-mm=ModelMatrixModel(formula("~x1+x2+x3"),traindf,remove_1st_dummy = T) 
+mm=ModelMatrixModel(formula("~x1+x2+x3"),traindf,remove_1st_dummy = F) 
 ```
 default is to keep first dummy variable
 ```{r}
@@ -105,17 +107,26 @@ default is to keep the invalid row ,i.e. set all dummy variables as 0. if handle
 data.frame(as.matrix(head(mm_pred$x,2))) 
 ```
 
-## save poly() orthogonal polynomials parameteres
-
+## poly() in formula
+ModelMatrixModel can save orthogonal polynomials parameter.
 ```{r}
 mm=ModelMatrixModel(formula("~poly(x2,3)+x3"),traindf) 
 data.frame(as.matrix(head(mm$x,2)))
 mm_pred=predict(mm,newdf)
 data.frame(as.matrix(head(mm_pred$x,2)))
 ```
-also accept raw polynomial transformation
+also works raw polynomial transformation
 ```{r}
 mm=ModelMatrixModel(formula("~poly(x2,3,raw=T)+x3"),traindf) 
+data.frame(as.matrix(head(mm$x,2)))
+mm_pred=predict(mm,newdf)
+data.frame(as.matrix(head(mm_pred$x,2)))
+```
+
+## scale and center
+training dataset can be scaled, and same scale parameters then can be applied to new dataset.
+```{r}
+mm=ModelMatrixModel(formula("~x2+x3"),traindf,scale = T,center = T) 
 data.frame(as.matrix(head(mm$x,2)))
 mm_pred=predict(mm,newdf)
 data.frame(as.matrix(head(mm_pred$x,2)))

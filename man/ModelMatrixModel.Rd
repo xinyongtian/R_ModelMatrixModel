@@ -8,19 +8,18 @@ ModelMatrixModel(
   rformula,
   data,
   sparse = T,
-  center = FALSE,
-  scale = FALSE,
+  center = F,
+  scale = F,
   remove_1st_dummy = F,
-  remove_same_value_column = F,
-  verbose = T
+  verbose = F
 )
 }
 \arguments{
-\item{rformula}{a formula, e.g. output of formula()}
+\item{rformula}{a formula, e.g. rformula=formula("~ 1+x1+x2").Note the interpreting of the formula might be different slightly from model.matrix function. In model.matrix(),intercept column will be included in output matrix with or without "1" in the formula. But in ModelMatrixModel(),intercept column will  be included in output matrix only when  "1" is present. Moreover "0" in the formula will be ignored.}
 
 \item{data}{a data.frame}
 
-\item{sparse}{bool, if True return a sparse matrix.}
+\item{sparse}{bool, if True return a sparse matrix, i.e. a}
 
 \item{center}{bool, if center the output}
 
@@ -28,13 +27,11 @@ ModelMatrixModel(
 
 \item{remove_1st_dummy}{bool, if remove the first dummy variable in one hot key transformation}
 
-\item{remove_same_value_column}{bool, if remove column with one unique value}
-
 \item{verbose}{bool, if print out progress}
 }
 \value{
-A ModelMatrixModel class,which includes the transformed matrix and  the fitted parameters.
+A ModelMatrixModel class,which includes the transformed matrix and  the transforming parameters.
 }
 \description{
-This function create model.matrix and save the fitted parameters
+This function  transforms a data.frame to matrix  based on a r formula. It is similar to model.matrix() function. But it output a class stored with the transformed matrix and the transforming parameters.
 }
