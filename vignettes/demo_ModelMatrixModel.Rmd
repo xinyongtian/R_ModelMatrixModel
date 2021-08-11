@@ -38,10 +38,6 @@ newdf=data.frame(x1 = sample(LETTERS[1:5], replace = T, 3),
 
 head(traindf)
 sapply(traindf,class) #input categorical variable can be either character or factor
-
-
-
-
 ```
 ## problem with model.matrix() function
 ```{r}
@@ -71,7 +67,7 @@ head(mm_pred$x,2)
 ## dummy varible
 ### keep   first dummy variable
 ```{r}
-mm=ModelMatrixModel(formula("~x1+x2+x3"),traindf,remove_1st_dummy = F) 
+mm=ModelMatrixModel(~x1+x2+x3,traindf,remove_1st_dummy = F) 
 ```
 default is to keep first dummy variable
 ```{r}
@@ -82,14 +78,14 @@ data.frame(as.matrix(head(mm_pred$x,2)))
 ### dummy variable with interaction
 #### keep 1st dummy variable
 ```{r}
-mm=ModelMatrixModel(formula("~x2+x3+x2:x3"),traindf) 
+mm=ModelMatrixModel(~x2+x3+x2:x3,traindf) 
 data.frame(as.matrix(head(mm$x,2))) # ':' in column name  is replaced with '_X_'
 mm_pred=predict(mm,newdf)
 data.frame(as.matrix(head(mm_pred$x,2)))
 ```
 #### remove 1st dummy variable
 ```{r}
-mm=ModelMatrixModel(formula("~x2*x3"),traindf,remove_1st_dummy = T) 
+mm=ModelMatrixModel(~x2*x3,traindf,remove_1st_dummy = T) 
 data.frame(as.matrix(head(mm$x,2)))
 mm_pred=predict(mm,newdf)
 data.frame(as.matrix(head(mm_pred$x,2)))
@@ -97,7 +93,7 @@ data.frame(as.matrix(head(mm_pred$x,2)))
 ### invalid level in new data
 It is a common categorical column in  new data contains in valid level, it can be handled as following
 ```{r}
-mm=ModelMatrixModel(formula("~x2+x3"),traindf) 
+mm=ModelMatrixModel(~x2+x3,traindf) 
 data.frame(as.matrix(head(mm$x,2)))
 newdf2=newdf
 newdf2[1,'x3']='z'  #create invalid level
@@ -111,14 +107,14 @@ data.frame(as.matrix(head(mm_pred$x,2)))
 ## poly() in formula
 ModelMatrixModel can save orthogonal polynomials parameter.
 ```{r}
-mm=ModelMatrixModel(formula("~poly(x2,3)+x3"),traindf) 
+mm=ModelMatrixModel(~poly(x2,3)+x3,traindf) 
 data.frame(as.matrix(head(mm$x,2)))
 mm_pred=predict(mm,newdf)
 data.frame(as.matrix(head(mm_pred$x,2)))
 ```
 also works raw polynomial transformation
 ```{r}
-mm=ModelMatrixModel(formula("~poly(x2,3,raw=T)+x3"),traindf) 
+mm=ModelMatrixModel(~poly(x2,3,raw=T)+x3, traindf) 
 data.frame(as.matrix(head(mm$x,2)))
 mm_pred=predict(mm,newdf)
 data.frame(as.matrix(head(mm_pred$x,2)))
@@ -127,7 +123,7 @@ data.frame(as.matrix(head(mm_pred$x,2)))
 ## scale and center
 training dataset can be scaled, and same scale parameters then can be applied to new dataset.
 ```{r}
-mm=ModelMatrixModel(formula("~x2+x3"),traindf,scale = T,center = T) 
+mm=ModelMatrixModel(~x2+x3,traindf,scale = T,center = T) 
 data.frame(as.matrix(head(mm$x,2)))
 mm_pred=predict(mm,newdf)
 data.frame(as.matrix(head(mm_pred$x,2)))

@@ -7,22 +7,19 @@
 \method{predict}{ModelMatrixModel}(object, data, handleInvalid = "keep", verbose = F, ...)
 }
 \arguments{
-\item{object}{a ModelMatrixModel object}
+\item{object}{a ModelMatrixModel object.}
 
-\item{data}{a data.frame}
+\item{data}{a data.frame.}
 
 \item{handleInvalid}{a string,'keep' or 'error'.  In dummy variable transformation, if categorical variable has a factor level that is unseen before, 'keep' will keep the record, output dummy variables will be all zero.}
 
-\item{verbose}{bool, if print out progress}
+\item{verbose}{bool, if print out progress.}
 
-\item{...}{other parameters}
+\item{...}{other parameters.}
 }
 \value{
 A ModelMatrixModel class,which includes the transformed matrix and  the necessary transforming parameters copied from input object.
 }
 \description{
-This function transform new data based on transforming parameters from a ModelMatrixModel object
-}
-\examples{
-see vignettes
+This function transforms new data based on transforming parameters from a ModelMatrixModel object
 }

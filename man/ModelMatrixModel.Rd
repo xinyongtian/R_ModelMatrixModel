@@ -15,23 +15,26 @@ ModelMatrixModel(
 )
 }
 \arguments{
-\item{rformula}{a formula, e.g. rformula=formula("~ 1+x1+x2").Note the interpreting of the formula might be different slightly from model.matrix function. In model.matrix(),intercept column will be included in output matrix with or without "1" in the formula. But in ModelMatrixModel(),intercept column will  be included in output matrix only when  "1" is present. Moreover "0" in the formula will be ignored.}
+\item{rformula}{a formula, e.g. formula("~ 1+x1+x2"),"~ 1+x1+x2",or ~ 1+x1+x2 . Note the interpreting of the formula might be different slightly from model.matrix function. In model.matrix(),intercept column will be included in output matrix with or without "1" in the formula. But in ModelMatrixModel(),intercept column will  be included in output matrix only when  "1" is present. Moreover "0" or "." in the formula will be ignored.}
 
-\item{data}{a data.frame}
+\item{data}{a data.frame.}
 
-\item{sparse}{bool, if True return a sparse matrix, i.e. a}
+\item{sparse}{bool, if True return a sparse matrix, i.e. a "dgCMatrix" class.}
 
-\item{center}{bool, if center the output}
+\item{center}{bool, if center the output.}
 
-\item{scale}{bool, if scale the output}
+\item{scale}{bool, if scale the output.}
 
-\item{remove_1st_dummy}{bool, if remove the first dummy variable in one hot key transformation}
+\item{remove_1st_dummy}{bool, if remove the first dummy variable in one hot key transformation.}
 
-\item{verbose}{bool, if print out progress}
+\item{verbose}{bool, if print out progress.}
 }
 \value{
 A ModelMatrixModel class,which includes the transformed matrix and  the transforming parameters.
 }
 \description{
-This function  transforms a data.frame to matrix  based on a r formula. It is similar to model.matrix() function. But it output a class stored with the transformed matrix and the transforming parameters.
+This function  transforms a data.frame to matrix (or sparse matrix)  based on a r formula. The mean different from model.matrix() function is that it outputs a class stored with the transformed matrix, as well as the transforming parameters which can be applied to new data.
+}
+\details{
+see vignettes for example.
 }

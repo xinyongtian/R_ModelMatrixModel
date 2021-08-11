@@ -32,24 +32,25 @@ eval_parent = function(x) eval.parent(parse(text = x))
 
 #' ModelMatrixModel() function
 #'
-#' This function  transforms a data.frame to matrix  based on a r formula. It is similar to model.matrix() function. But it output a class stored with the transformed matrix and the transforming parameters.
+#' This function  transforms a data.frame to matrix (or sparse matrix)  based on a r formula. The mean different from model.matrix() function is that it outputs a class stored with the transformed matrix, as well as the transforming parameters which can be applied to new data.
 #'
-#' @param rformula a formula, e.g. rformula=formula("~ 1+x1+x2").Note the interpreting of the formula might be different slightly from model.matrix function. In model.matrix(),intercept column will be included in output matrix with or without "1" in the formula. But in ModelMatrixModel(),intercept column will  be included in output matrix only when  "1" is present. Moreover "0" in the formula will be ignored.
-#' @param data a data.frame
-#' @param sparse bool, if True return a sparse matrix, i.e. a
-#' @param center bool, if center the output
-#' @param scale  bool, if scale the output
-#' @param remove_1st_dummy bool, if remove the first dummy variable in one hot key transformation
-#' @param verbose bool, if print out progress
+#' @param rformula a formula, e.g. formula("~ 1+x1+x2"),"~ 1+x1+x2",or ~ 1+x1+x2 . Note the interpreting of the formula might be different slightly from model.matrix function. In model.matrix(),intercept column will be included in output matrix with or without "1" in the formula. But in ModelMatrixModel(),intercept column will  be included in output matrix only when  "1" is present. Moreover "0" or "." in the formula will be ignored.
+#' @param data a data.frame.
+#' @param sparse bool, if True return a sparse matrix, i.e. a "dgCMatrix" class.
+#' @param center bool, if center the output.
+#' @param scale  bool, if scale the output.
+#' @param remove_1st_dummy bool, if remove the first dummy variable in one hot key transformation.
+#' @param verbose bool, if print out progress.
 #' @return A ModelMatrixModel class,which includes the transformed matrix and  the transforming parameters.
+#' @details
+#' see vignettes for example.
 #' @export
-#' @example
-#' see vignettes
 ModelMatrixModel = function(rformula, data, sparse = T, center = F, scale = F,
                               remove_1st_dummy = F,verbose=F) {
-  rformula_str = as.character(rformula)[2]
+  rformula=formula(rformula)
+  rformula_str = tail(as.character(rformula),1)
   rformula_items = trim(unlist(strsplit(rformula_str, "[+-]")))
-  rformula_items =rformula_items[!rformula_items%in%c("0","")]
+  rformula_items =rformula_items[!rformula_items%in%c("0","",".")]
   rformula_df = data.frame(item_name = rformula_items, item_number = (1:length(rformula_items)))
   rformula_items_length = length(rformula_items)
   center.attr = NULL
@@ -122,21 +123,19 @@ ModelMatrixModel = function(rformula, data, sparse = T, center = F, scale = F,
 
 #' predict() function
 #'
-#' This function transform new data based on transforming parameters from a ModelMatrixModel object
+#' This function transforms new data based on transforming parameters from a ModelMatrixModel object
 #'
-#' @param object a ModelMatrixModel object
-#' @param data a data.frame
+#' @param object a ModelMatrixModel object.
+#' @param data a data.frame.
 #' @param handleInvalid a string,'keep' or 'error'.  In dummy variable transformation, if categorical variable has a factor level that is unseen before, 'keep' will keep the record, output dummy variables will be all zero.
-#' @param ... other parameters
-#' @param verbose bool, if print out progress
+#' @param ... other parameters.
+#' @param verbose bool, if print out progress.
 #' @return A ModelMatrixModel class,which includes the transformed matrix and  the necessary transforming parameters copied from input object.
 #' @export
-#' @examples
-#' see vignettes
 predict.ModelMatrixModel = function(object, data, handleInvalid = "keep",verbose=F, ...) {
   rformula_str = tail(as.character(object$rformula), 1)
   rformula_items = trim(unlist(strsplit(rformula_str, "[+-]")))
-  rformula_items =rformula_items[!rformula_items%in%c("0","")]
+  rformula_items =rformula_items[!rformula_items%in%c("0","",".")]
   rformula_df = data.frame(item_name = rformula_items, item_number = (1:length(rformula_items)))
   rformula_df$item_name_modified = gsub("(poly\\((.*?),.*)\\)", "\\1,coefs=object$extract_poly_coef$\\2)", rformula_df$item_name)
   rformula_items_length = length(rformula_items)
