@@ -45,7 +45,7 @@ f1=formula("~x1+x2")
 head(model.matrix(f1, traindf),2)
 head(model.matrix(f1, newdf),2)
 ```
-Note the number of columns is different in the two ouputs, which will be problematic when  applying the built model to new data . To avoid that,  column x1  in both dataset needs to be transformed  to factor with exact same levels. That will be cumbersome if there are many categorical columns. In addition, other transforming parameters, in transformation like  orthogonal polynomials, also need to be saved.
+Note the number of columns is different in the two outputs, which will be problematic when  applying the built model to new data . To avoid that,  column x1  in both dataset needs to be transformed  to factor with exact same levels. That will be cumbersome if there are many categorical columns. In addition, other transforming parameters, in transformation like  orthogonal polynomials, also need to be saved.
 
 ## ModelMatixModel comes to rescue
 ### fit data to create ModelMatixModel object
@@ -64,7 +64,7 @@ mm_pred=predict(mm,newdf)
 head(mm_pred$x,2)
 ```
 
-## dummy varible
+## dummy variable
 ### keep   first dummy variable
 ```{r}
 mm=ModelMatrixModel(~x1+x2+x3,traindf,remove_1st_dummy = F) 
