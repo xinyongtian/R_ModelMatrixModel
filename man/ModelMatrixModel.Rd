@@ -19,15 +19,15 @@ ModelMatrixModel(
 
 \item{data}{a data.frame.}
 
-\item{sparse}{bool, if True return a sparse matrix, i.e. a "dgCMatrix" class.}
+\item{sparse}{boolean, if True return a sparse matrix, i.e. a "dgCMatrix" class.}
 
-\item{center}{bool, if center the output.}
+\item{center}{boolean, if center the output.}
 
-\item{scale}{bool, if scale the output.}
+\item{scale}{boolean, if scale the output.}
 
-\item{remove_1st_dummy}{bool, if remove the first dummy variable in one hot key transformation.}
+\item{remove_1st_dummy}{boolean, if remove the first dummy variable in one hot key transformation.}
 
-\item{verbose}{bool, if print out progress.}
+\item{verbose}{boolean, if print out progress.}
 }
 \value{
 A ModelMatrixModel class,which includes the transformed matrix and  the transforming parameters.

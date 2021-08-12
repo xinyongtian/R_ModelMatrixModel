@@ -13,7 +13,7 @@
 
 \item{handleInvalid}{a string,'keep' or 'error'.  In dummy variable transformation, if categorical variable has a factor level that is unseen before, 'keep' will keep the record, output dummy variables will be all zero.}
 
-\item{verbose}{bool, if print out progress.}
+\item{verbose}{boolean, if print out progress.}
 
 \item{...}{other parameters.}
 }

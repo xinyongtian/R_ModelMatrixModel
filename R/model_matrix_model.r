@@ -36,11 +36,11 @@ eval_parent = function(x) eval.parent(parse(text = x))
 #'
 #' @param rformula a formula, e.g. formula("~ 1+x1+x2"),"~ 1+x1+x2",or ~ 1+x1+x2 . Note the interpreting of the formula might be different slightly from model.matrix function. In model.matrix(),intercept column will be included in output matrix with or without "1" in the formula. But in ModelMatrixModel(),intercept column will  be included in output matrix only when  "1" is present. Moreover "0" or "." in the formula will be ignored.
 #' @param data a data.frame.
-#' @param sparse bool, if True return a sparse matrix, i.e. a "dgCMatrix" class.
-#' @param center bool, if center the output.
-#' @param scale  bool, if scale the output.
-#' @param remove_1st_dummy bool, if remove the first dummy variable in one hot key transformation.
-#' @param verbose bool, if print out progress.
+#' @param sparse boolean, if True return a sparse matrix, i.e. a "dgCMatrix" class.
+#' @param center boolean, if center the output.
+#' @param scale  boolean, if scale the output.
+#' @param remove_1st_dummy boolean, if remove the first dummy variable in one hot key transformation.
+#' @param verbose boolean, if print out progress.
 #' @return A ModelMatrixModel class,which includes the transformed matrix and  the transforming parameters.
 #' @details
 #' see vignettes for example.
@@ -129,7 +129,7 @@ ModelMatrixModel = function(rformula, data, sparse = T, center = F, scale = F,
 #' @param data a data.frame.
 #' @param handleInvalid a string,'keep' or 'error'.  In dummy variable transformation, if categorical variable has a factor level that is unseen before, 'keep' will keep the record, output dummy variables will be all zero.
 #' @param ... other parameters.
-#' @param verbose bool, if print out progress.
+#' @param verbose boolean, if print out progress.
 #' @return A ModelMatrixModel class,which includes the transformed matrix and  the necessary transforming parameters copied from input object.
 #' @export
 predict.ModelMatrixModel = function(object, data, handleInvalid = "keep",verbose=F, ...) {
