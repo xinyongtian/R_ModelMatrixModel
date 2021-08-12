@@ -2,3 +2,6 @@
 
 S3method(predict,ModelMatrixModel)
 export(ModelMatrixModel)
+importFrom(stats,formula)
+importFrom(stats,model.matrix)
+importFrom(utils,tail)

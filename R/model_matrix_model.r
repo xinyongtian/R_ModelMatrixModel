@@ -1,3 +1,6 @@
+#' @importFrom stats formula model.matrix
+#' @importFrom utils tail
+
 trim <- function(x) gsub("^\\s+|\\s+$", "", x)
 rm.1level.col = function(mt) mt[, apply(mt, 2, function(x) length(unique(x)) != 1),
                                 drop = F]
