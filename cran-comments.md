@@ -13,6 +13,10 @@
   New submission
 
 * This is a new release.
-* 2021_08_13 correct two NOTE 1. possible spelling error in DESCRIPTION.  2. add  cran-comments.md to .Rbuildignore. The above 'checking CRAN incoming feasibility ... NOTE' seems should be ignored
+
+## Resubmission 2021_08_13
+This is a resubmission. In this version I have:
+* correct two NOTE 1. possible spelling error in DESCRIPTION.  2. add  cran-comments.md to .Rbuildignore. 
+* The above 'checking CRAN incoming feasibility ... NOTE' is ignored based online search
 
 
