@@ -1,16 +1,18 @@
 ## Test environments
-* local Windows 10 x64, 4.0.1
-* win-builder (devel and release)
+- R-hub windows-x86_64-devel (r-devel)
+- R-hub ubuntu-gcc-release (r-release)
+- R-hub fedora-clang-devel (r-devel)
 
 ## R CMD check results
-> checking CRAN incoming feasibility ... NOTE
+
+0 errors | 0 warnings | 1 note
+
+> On windows-x86_64-devel (r-devel), ubuntu-gcc-release (r-release), fedora-clang-devel (r-devel)
+  checking CRAN incoming feasibility ... NOTE
   Maintainer: 'Xinyong Tian <xinyongtian@gmail.com>'
-  
-  
-  Possibly mis-spelled words in DESCRIPTION: (**XT: this is package name,not mis-spelling**)
-    ModelMatrixModel (9:37)
   New submission
 
-0 errors √ | 0 warnings √ | 1 note x
+* This is a new release.
+* 2021_08_13 correct two NOTE 1. possible spelling error in DESCRIPTION.  2. add  cran-comments.md to .Rbuildignore. The above 'checking CRAN incoming feasibility ... NOTE' seems should be ignored
 
 

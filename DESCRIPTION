@@ -4,9 +4,9 @@ Title: Create Model Matrix and Save the Transforming Parameters
 Version: 0.1.0
 Author: Xinyong Tian
 Maintainer: Xinyong Tian <xinyongtian@gmail.com>
-Description: The model.matrix() function in R is a convenient way to transform training dataset for modeling. 
+Description: The model.matrix() function in R is  convenient for transforming training dataset for modeling. 
     But it does not save any parameter used in transformation, so it is hard to apply the same transformation 
-    to test dataset or new dataset. ModelMatrixModel package is created to solve the problem..
+    to test dataset or new dataset. This package is created to solve the problem.
 License: GPL-3
 Encoding: UTF-8
 LazyData: false
