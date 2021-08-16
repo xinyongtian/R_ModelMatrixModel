@@ -20,4 +20,8 @@ This is a resubmission. In this version I have:
 * correct two NOTE 1. possible spelling error in DESCRIPTION.  2. add  cran-comments.md to .Rbuildignore. 
 * The above 'checking CRAN incoming feasibility ... NOTE' is ignored based online search
 
+## Resubmission 2021_08_16
+This is a resubmission. In this version I have: 
+* Replace T with TRUE and F with FALSE in .rd file
+* add examples to export function
 

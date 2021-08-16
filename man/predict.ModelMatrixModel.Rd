@@ -4,7 +4,7 @@
 \alias{predict.ModelMatrixModel}
 \title{predict() function}
 \usage{
-\method{predict}{ModelMatrixModel}(object, data, handleInvalid = "keep", verbose = F, ...)
+\method{predict}{ModelMatrixModel}(object, data, handleInvalid = "keep", verbose = FALSE, ...)
 }
 \arguments{
 \item{object}{a ModelMatrixModel object.}
@@ -22,4 +22,15 @@ A ModelMatrixModel class,which includes the transformed matrix and  the necessar
 }
 \description{
 This function transforms new data based on transforming parameters from a ModelMatrixModel object
+}
+\examples{
+library(ModelMatrixModel)
+traindf= data.frame(x1 = sample(LETTERS[1:5], replace = TRUE, 20),
+                    x2 = rnorm(20, 100, 5),
+                    y = rnorm(20, 10, 2))
+newdf=data.frame(x1 = sample(LETTERS[1:5], replace = TRUE, 3),
+                 x2 = rnorm(3, 100, 5))
+mm=ModelMatrixModel(~x1+x2,traindf,remove_1st_dummy = FALSE)
+mm_pred=predict(mm,newdf)
+data.frame(as.matrix(head(mm_pred$x,2)))
 }

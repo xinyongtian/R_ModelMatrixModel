@@ -3,7 +3,7 @@
 
 trim <- function(x) gsub("^\\s+|\\s+$", "", x)
 rm.1level.col = function(mt) mt[, apply(mt, 2, function(x) length(unique(x)) != 1),
-                                drop = F]
+                                drop = FALSE]
 anysubset = function(mt, mt2col, fill = 0) {
   diffcol = setdiff(mt2col, dimnames(mt)[[2]])
   diffmt = matrix(fill, nrow(mt), length(diffcol), dimnames = list(NULL, diffcol))
@@ -39,17 +39,25 @@ eval_parent = function(x) eval.parent(parse(text = x))
 #'
 #' @param rformula a formula, e.g. formula("~ 1+x1+x2"),"~ 1+x1+x2",or ~ 1+x1+x2 . Note the interpreting of the formula might be different slightly from model.matrix function. In model.matrix(),intercept column will be included in output matrix with or without "1" in the formula. But in ModelMatrixModel(),intercept column will  be included in output matrix only when  "1" is present. Moreover "0" or "." in the formula will be ignored.
 #' @param data a data.frame.
-#' @param sparse boolean, if True return a sparse matrix, i.e. a "dgCMatrix" class.
+#' @param sparse boolean, if TRUE return a sparse matrix, i.e. a "dgCMatrix" class.
 #' @param center boolean, if center the output.
 #' @param scale  boolean, if scale the output.
 #' @param remove_1st_dummy boolean, if remove the first dummy variable in one hot key transformation.
 #' @param verbose boolean, if print out progress.
 #' @return A ModelMatrixModel class,which includes the transformed matrix and  the transforming parameters.
 #' @details
-#' see vignettes for example.
+#' see vignettes.
 #' @export
-ModelMatrixModel = function(rformula, data, sparse = T, center = F, scale = F,
-                              remove_1st_dummy = F,verbose=F) {
+#' @examples
+#' library(ModelMatrixModel)
+#' traindf= data.frame(x1 = sample(LETTERS[1:5], replace = TRUE, 20),
+#'                     x2 = rnorm(20, 100, 5),
+#'                     y = rnorm(20, 10, 2))
+#' mm=ModelMatrixModel(~x1+x2,traindf,remove_1st_dummy = FALSE)
+#' data.frame(as.matrix(head(mm$x,2)))
+
+ModelMatrixModel = function(rformula, data, sparse = TRUE, center = FALSE, scale = FALSE,
+                              remove_1st_dummy = FALSE,verbose=FALSE) {
   rformula=formula(rformula)
   rformula_str = tail(as.character(rformula),1)
   rformula_items = trim(unlist(strsplit(rformula_str, "[+-]")))
@@ -76,22 +84,22 @@ ModelMatrixModel = function(rformula, data, sparse = T, center = F, scale = F,
     if (remove_1st_dummy) {
       nth_item_formula = formula(paste("~", nth_item_formula_str))
       nth_item_modelmatrix = model.matrix(nth_item_formula, data = data)
-      if (nth_item_formula_str!="1") nth_item_modelmatrix = nth_item_modelmatrix[, -1, drop = F]
+      if (nth_item_formula_str!="1") nth_item_modelmatrix = nth_item_modelmatrix[, -1, drop = FALSE]
     }
     else {
       nth_item_formula = formula(paste("~0+", nth_item_formula_str))
       nth_item_modelmatrix = model.matrix(nth_item_formula, data = data)
     }
     nth_item_modelmatrix=scale(nth_item_modelmatrix, center = center, scale = scale)
-    if (center == T) {
+    if (center == TRUE) {
       xns = attr(nth_item_modelmatrix, "scaled:center")
       center.attr = c(center.attr, xns)
     }
-    if (scale == T) {
+    if (scale == TRUE) {
       xns = attr(nth_item_modelmatrix, "scaled:scale")
       scale.attr = c(scale.attr, xns)
     }
-    if (sparse == T) {
+    if (sparse == TRUE) {
       nth_item_modelmatrix = Matrix::Matrix(nth_item_modelmatrix, sparse = sparse)
       if (n == 1) {
         x = nth_item_modelmatrix
@@ -110,9 +118,9 @@ ModelMatrixModel = function(rformula, data, sparse = T, center = F, scale = F,
     }
   }
   colnames(x) = gsub("[^[:alnum:]]", "_", sub(":", "_X_", colnames(x)))
-  if (center == T)
+  if (center == TRUE)
     names(center.attr) = gsub("[^[:alnum:]]", "_", names(center.attr))
-  if (scale == T)
+  if (scale == TRUE)
     names(scale.attr) = gsub("[^[:alnum:]]", "_", names(scale.attr))
   extract_poly_coef = extract_poly_coef(rformula, data = data)
   mx = list(rformula = rformula, x = x, extract_poly_coef = extract_poly_coef, scale.attr = scale.attr,
@@ -135,7 +143,17 @@ ModelMatrixModel = function(rformula, data, sparse = T, center = F, scale = F,
 #' @param verbose boolean, if print out progress.
 #' @return A ModelMatrixModel class,which includes the transformed matrix and  the necessary transforming parameters copied from input object.
 #' @export
-predict.ModelMatrixModel = function(object, data, handleInvalid = "keep",verbose=F, ...) {
+#' @examples
+#' library(ModelMatrixModel)
+#' traindf= data.frame(x1 = sample(LETTERS[1:5], replace = TRUE, 20),
+#'                     x2 = rnorm(20, 100, 5),
+#'                     y = rnorm(20, 10, 2))
+#' newdf=data.frame(x1 = sample(LETTERS[1:5], replace = TRUE, 3),
+#'                  x2 = rnorm(3, 100, 5))
+#' mm=ModelMatrixModel(~x1+x2,traindf,remove_1st_dummy = FALSE)
+#' mm_pred=predict(mm,newdf)
+#' data.frame(as.matrix(head(mm_pred$x,2)))
+predict.ModelMatrixModel = function(object, data, handleInvalid = "keep",verbose=FALSE, ...) {
   rformula_str = tail(as.character(object$rformula), 1)
   rformula_items = trim(unlist(strsplit(rformula_str, "[+-]")))
   rformula_items =rformula_items[!rformula_items%in%c("0","",".")]
@@ -167,7 +185,7 @@ predict.ModelMatrixModel = function(object, data, handleInvalid = "keep",verbose
     nth_item_modelmatrix = model.matrix(nth_item_formula, data = data)
     colnames(nth_item_modelmatrix) = gsub("(poly\\(.*),.+\\)", "\\1)", colnames(nth_item_modelmatrix))
     colnames(nth_item_modelmatrix) = gsub("[^[:alnum:]]", "_", sub(":", "_X_", colnames(nth_item_modelmatrix)))
-    if (object$sparse == T) {
+    if (object$sparse == TRUE) {
       nth_item_modelmatrix = Matrix::Matrix(nth_item_modelmatrix, sparse = object$sparse)
       if (n == 1) {
         x = nth_item_modelmatrix
@@ -186,13 +204,13 @@ predict.ModelMatrixModel = function(object, data, handleInvalid = "keep",verbose
     }
   }
   if (is.null(object$center.attr))
-    center = F
+    center = FALSE
   else center = object$center.attr[colnames(x)]
   if (is.null(object$scale.attr))
-    scale = F
+    scale = FALSE
   else scale = object$scale.attr[colnames(x)]
   x = scale(x, center = center, scale = scale)
-  if (object$sparse == T)
+  if (object$sparse == TRUE)
     x = Anysubset(x, object$x.colnames)
   else x = anysubset(x, object$x.colnames)
   object$x = x

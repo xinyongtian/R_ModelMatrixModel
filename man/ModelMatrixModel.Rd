@@ -7,11 +7,11 @@
 ModelMatrixModel(
   rformula,
   data,
-  sparse = T,
-  center = F,
-  scale = F,
-  remove_1st_dummy = F,
-  verbose = F
+  sparse = TRUE,
+  center = FALSE,
+  scale = FALSE,
+  remove_1st_dummy = FALSE,
+  verbose = FALSE
 )
 }
 \arguments{
@@ -19,7 +19,7 @@ ModelMatrixModel(
 
 \item{data}{a data.frame.}
 
-\item{sparse}{boolean, if True return a sparse matrix, i.e. a "dgCMatrix" class.}
+\item{sparse}{boolean, if TRUE return a sparse matrix, i.e. a "dgCMatrix" class.}
 
 \item{center}{boolean, if center the output.}
 
@@ -36,5 +36,13 @@ A ModelMatrixModel class,which includes the transformed matrix and  the transfor
 This function  transforms a data.frame to matrix (or sparse matrix)  based on a r formula. The mean different from model.matrix() function is that it outputs a class stored with the transformed matrix, as well as the transforming parameters which can be applied to new data.
 }
 \details{
-see vignettes for example.
+see vignettes.
+}
+\examples{
+library(ModelMatrixModel)
+traindf= data.frame(x1 = sample(LETTERS[1:5], replace = TRUE, 20),
+                    x2 = rnorm(20, 100, 5),
+                    y = rnorm(20, 10, 2))
+mm=ModelMatrixModel(~x1+x2,traindf,remove_1st_dummy = FALSE)
+data.frame(as.matrix(head(mm$x,2)))
 }
