@@ -22,6 +22,6 @@ This is a resubmission. In this version I have:
 
 ## Resubmission 2021_08_16
 This is a resubmission. In this version I have: 
-* Replace T with TRUE and F with FALSE in .rd file
+* Replace T with TRUE, and F with FALSE in .rd file
 * add examples to export function
 
